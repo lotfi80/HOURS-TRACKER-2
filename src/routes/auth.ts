@@ -1,6 +1,12 @@
 import express from "express";
 
-import { registerUser, getUser, getAllUsers, login } from "../controller/user";
+import {
+  registerUser,
+  getUser,
+  getAllUsers,
+  login,
+  logout,
+} from "../controller/user";
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
 const router = express.Router();
@@ -57,10 +63,20 @@ const router = express.Router();
 //   }
 // }
 
-router.post("/user", registerUser);
-router.get("/user/:username", getUser);
-router.get("/users", getAllUsers);
-// Ensure 'login' is a valid Express handler function
+router.post("/register", registerUser);
 router.post("/login", login as RequestHandler);
+router.post(
+  "/logout",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await logout(req, res);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+// router.get("/user/:username", getUser);
+// router.get("/users", getAllUsers);
+// Ensure 'login' is a valid Express handler function
 
 export default router;

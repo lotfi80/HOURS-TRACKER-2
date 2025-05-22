@@ -1,5 +1,7 @@
 import { User } from "../models/User";
 import bcrypt from "bcrypt";
+import { issueJwt, verifyJwt } from "../libs/jwt";
+
 import { Request, Response } from "express";
 import { RequestHandler } from "express";
 
@@ -59,11 +61,39 @@ export const login = async (req: Request, res: Response) => {
         success: false,
         message: "Invalid credentials",
       });
+    const token = issueJwt(user);
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 3600000,
+    });
+    const test = verifyJwt(token);
+    console.log(token);
+    console.log(test);
+
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      token,
+      user,
     });
   } catch (error) {}
+};
+export const logout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("jwt");
+    return res.status(200).json({
+      success: true,
+      message: "Logout successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error,
+    });
+  }
 };
 
 export const getUser: RequestHandler = async (req: Request, res: Response) => {
